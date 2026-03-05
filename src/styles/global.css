@@ -1,0 +1,43 @@
+/* src/styles/global.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+:root {
+  --cream: #f3ebe4;
+  --warm-white: #f8f2ed;
+  --spice: #651b2a;
+  --spice-light: #7d2a3a;
+  --gold: #e7d8c3;
+  --gold-light: #f3e7d7;
+  --teal: #7f3142;
+  --teal-light: #9c4659;
+  --charcoal: #22171a;
+  --ink: #342428;
+  --muted: #766167;
+  --border: rgba(101,27,42,0.18);
+  --shadow: 0 8px 40px rgba(34,23,26,0.14);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--warm-white);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--spice); border-radius: 3px; }
+
+/* ── FADE IN ANIMATION ── */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
