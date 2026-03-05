@@ -401,37 +401,11 @@ function MenuManagement() {
         </div>
         <button
           className="admin-add-btn admin-add-toggle-btn"
-          onClick={() => setShowAddForm(v => !v)}
+          onClick={() => setShowAddForm(true)}
         >
-          {showAddForm ? 'Cancel' : '+ Add New Item'}
+          + Add New Item
         </button>
       </div>
-
-      {showAddForm && (
-        <div className="admin-add-form">
-          <div className="admin-add-grid">
-            <div><label className="admin-label">Name *</label><input className="admin-input" placeholder="Dish name" {...f('name')} /></div>
-            <div><label className="admin-label">Price (₹) *</label><input className="admin-input" type="number" placeholder="150" {...f('price')} /></div>
-            <div>
-              <label className="admin-label">Category</label>
-              <select className="admin-input" {...f('cat')}>
-                {['kerala','chinese','south-indian','beverages','desserts'].map(c => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="admin-label">Type</label>
-              <select className="admin-input" {...f('type')}>
-                <option value="veg">Veg</option><option value="non-veg">Non-Veg</option>
-              </select>
-            </div>
-            <div><label className="admin-label">Description</label><input className="admin-input" placeholder="Short description" {...f('desc')} /></div>
-            <div><label className="admin-label">Image URL</label><input className="admin-input" placeholder="https://..." {...f('img')} /></div>
-            <div className="span3">
-              <button className="admin-add-btn" onClick={handleAdd}>+ Add to Menu</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="admin-table-wrap">
         <table className="admin-table">
@@ -553,6 +527,41 @@ function MenuManagement() {
               <button className="btn-secondary" onClick={() => setEditItem(null)}>Cancel</button>
               <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handleSaveEdit}>
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddForm && (
+        <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) setShowAddForm(false); }}>
+          <div className="modal">
+            <div className="modal-title">Add New Item</div>
+            <div className="modal-sub">Create a new menu item</div>
+
+            <div className="admin-add-grid">
+              <div><label className="admin-label">Name *</label><input className="admin-input" placeholder="Dish name" {...f('name')} /></div>
+              <div><label className="admin-label">Price (₹) *</label><input className="admin-input" type="number" placeholder="150" {...f('price')} /></div>
+              <div>
+                <label className="admin-label">Category</label>
+                <select className="admin-input" {...f('cat')}>
+                  {['kerala','chinese','south-indian','beverages','desserts'].map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="admin-label">Type</label>
+                <select className="admin-input" {...f('type')}>
+                  <option value="veg">Veg</option><option value="non-veg">Non-Veg</option>
+                </select>
+              </div>
+              <div><label className="admin-label">Description</label><input className="admin-input" placeholder="Short description" {...f('desc')} /></div>
+              <div><label className="admin-label">Image URL</label><input className="admin-input" placeholder="https://..." {...f('img')} /></div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setShowAddForm(false)}>Cancel</button>
+              <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handleAdd}>
+                + Add to Menu
               </button>
             </div>
           </div>
@@ -827,45 +836,11 @@ function TeamRoles() {
         </div>
         <button
           className="admin-add-btn admin-add-toggle-btn"
-          onClick={() => setShowAddTeamForm(v => !v)}
+          onClick={() => setShowAddTeamForm(true)}
         >
-          {showAddTeamForm ? 'Cancel' : '+ Add Team Member'}
+          + Add Team Member
         </button>
       </div>
-
-      {showAddTeamForm && (
-        <div className="admin-add-form" style={{ marginBottom: '1.1rem' }}>
-          <div className="admin-add-grid">
-            <div>
-              <label className="admin-label">Name *</label>
-              <input className="admin-input" placeholder="Full name" {...af('name')} />
-            </div>
-            <div>
-              <label className="admin-label">Email *</label>
-              <input className="admin-input" type="email" placeholder="email@example.com" {...af('email')} />
-            </div>
-            <div>
-              <label className="admin-label">Phone</label>
-              <input className="admin-input" placeholder="+91 XXXXX XXXXX" {...af('phone')} />
-            </div>
-            <div>
-              <label className="admin-label">Password *</label>
-              <input className="admin-input" type="password" placeholder="At least 8 characters" {...af('password')} />
-            </div>
-            <div>
-              <label className="admin-label">Role *</label>
-              <select className="admin-input" {...af('role')}>
-                {teamRoles.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'end' }}>
-              <button className="admin-add-btn" onClick={addTeamMember} disabled={addingMember}>
-                {addingMember ? 'Adding...' : '+ Add Member'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {loading ? (
         <div className="admin-empty-panel">Loading users...</div>
@@ -957,6 +932,47 @@ function TeamRoles() {
               <button className="btn-secondary" onClick={() => setEditingUser(null)}>Cancel</button>
               <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={saveEdit}>
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddTeamForm && (
+        <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) setShowAddTeamForm(false); }}>
+          <div className="modal">
+            <div className="modal-title">Add Team Member</div>
+            <div className="modal-sub">Create a new staff account</div>
+
+            <div className="admin-add-grid">
+              <div>
+                <label className="admin-label">Name *</label>
+                <input className="admin-input" placeholder="Full name" {...af('name')} />
+              </div>
+              <div>
+                <label className="admin-label">Email *</label>
+                <input className="admin-input" type="email" placeholder="email@example.com" {...af('email')} />
+              </div>
+              <div>
+                <label className="admin-label">Phone</label>
+                <input className="admin-input" placeholder="+91 XXXXX XXXXX" {...af('phone')} />
+              </div>
+              <div>
+                <label className="admin-label">Password *</label>
+                <input className="admin-input" type="password" placeholder="At least 8 characters" {...af('password')} />
+              </div>
+              <div>
+                <label className="admin-label">Role *</label>
+                <select className="admin-input" {...af('role')}>
+                  {teamRoles.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setShowAddTeamForm(false)}>Cancel</button>
+              <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={addTeamMember} disabled={addingMember}>
+                {addingMember ? 'Adding...' : '+ Add Member'}
               </button>
             </div>
           </div>
