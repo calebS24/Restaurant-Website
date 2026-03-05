@@ -78,6 +78,7 @@ function Dashboard({ onNavigate }) {
 function Reservations() {
   const { reservations, addReservation, updateReservation, removeReservation, setRescheduleModal, showToast } = useApp();
   const [contactModal, setContactModal] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAddReservationForm, setShowAddReservationForm] = useState(false);
   const [newReservation, setNewReservation] = useState({
     name: '',
@@ -100,8 +101,10 @@ function Reservations() {
     showToast(`Reservation ${id} marked as ${status}.`, status === 'unavailable' ? 'error' : 'success');
   };
 
-  const handleRemove = (id) => {
-    removeReservation(id);
+  const confirmRemove = () => {
+    if (!deleteTarget) return;
+    removeReservation(deleteTarget.id);
+    setDeleteTarget(null);
     showToast('Reservation removed.', '');
   };
 
@@ -227,7 +230,7 @@ function Reservations() {
                       type="button"
                       aria-label={`Remove ${r.name}`}
                       title="Remove reservation"
-                      onClick={() => handleRemove(r.id)}
+                      onClick={() => setDeleteTarget({ id: r.id, name: r.name })}
                     >
                       ×
                     </button>
@@ -327,6 +330,21 @@ function Reservations() {
               <button className="btn-secondary" onClick={() => setShowAddReservationForm(false)}>Cancel</button>
               <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handleAddReservation}>
                 + Add Reservation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) setDeleteTarget(null); }}>
+          <div className="modal">
+            <div className="modal-title">Delete Reservation</div>
+            <div className="modal-sub">Are you sure to delete the reservation for <strong>{deleteTarget.name}</strong>?</div>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setDeleteTarget(null)}>No</button>
+              <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={confirmRemove}>
+                Yes
               </button>
             </div>
           </div>
