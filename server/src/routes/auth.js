@@ -18,6 +18,7 @@ function toPublicUser(user, accountType) {
     name: user.name,
     email: user.email,
     phone: user.phone || '',
+    sex: user.sex || 'prefer_not_to_say',
     role: user.role,
   };
 }
@@ -33,7 +34,7 @@ function validatePassword(password) {
 
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body || {};
+    const { name, email, password, phone, sex } = req.body || {};
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
@@ -56,6 +57,9 @@ router.post('/register', async (req, res) => {
       name: String(name).trim(),
       email: normalizedEmail,
       phone: String(phone || '').trim(),
+      sex: ['male', 'female', 'other', 'prefer_not_to_say'].includes(String(sex || '').trim())
+        ? String(sex).trim()
+        : 'prefer_not_to_say',
       passwordHash,
     };
 

@@ -45,12 +45,21 @@ export default function Footer() {
             </a>
             <a
               className="social-btn"
-              href="https://wa.me/919999999999"
+              href="https://wa.me/919048844099"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"
             >
               💬
+            </a>
+            <a
+              className="social-btn"
+              href="https://maps.app.goo.gl/Jww5795txpiipYUZA"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Google Maps"
+            >
+              📍
             </a>
           </div>
         </div>
@@ -66,6 +75,7 @@ export default function Footer() {
         <div>
           <div className="footer-heading">Visit Us</div>
           <ul className="footer-links">
+            <li><a href="tel:09048844099">090488 44099</a></li>
             <li><a href="#!">Nangiarkulangara</a></li>
             <li><a href="#!">Alappuzha - 690513</a></li>
             <li><a href="#!">Kerala, India</a></li>

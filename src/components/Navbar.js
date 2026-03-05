@@ -17,10 +17,24 @@ export default function Navbar() {
 
     setCurrentPage(page);
     setMenuOpen(false);
+
+    if (page === 'home' && !hash) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 60);
+      return;
+    }
+
     if (hash) {
       setTimeout(() => {
         const el = document.getElementById(hash);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (el) {
+          const navEl = document.querySelector('.nav');
+          const navHeight = navEl ? navEl.getBoundingClientRect().height : 70;
+          const extraGap = 14;
+          const y = el.getBoundingClientRect().top + window.pageYOffset - navHeight - extraGap;
+          window.scrollTo({ top: Math.max(y, 0), behavior: 'smooth' });
+        }
       }, 100);
     }
   };

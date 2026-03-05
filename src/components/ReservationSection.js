@@ -36,7 +36,6 @@ export default function ReservationSection() {
     <section className="reservation-section" id="reservation">
       <div className="section-inner">
         <div className="fade-in-up">
-          <div className="section-label">Book Your Spot</div>
           <h2 className="section-title">Make a <em>Reservation</em></h2>
           <p className="section-desc">Reserve your table in advance and enjoy a seamless dining experience at The Venice Food Hub.</p>
         </div>
@@ -76,7 +75,7 @@ export default function ReservationSection() {
                     .map(g => <option key={g}>{g}</option>)}
                 </select>
               </div>
-              <div className="form-group span2">
+              <div className="form-group span1 occasion-field">
                 <label className="form-label">Occasion</label>
                 <select ref={occasionRef} className="form-input">
                   <option value="">Regular Dining</option>
@@ -84,7 +83,7 @@ export default function ReservationSection() {
                     .map(o => <option key={o}>{o}</option>)}
                 </select>
               </div>
-              <div className="form-group span3">
+              <div className="form-group span2 notes-field">
                 <label className="form-label">Special Requests</label>
                 <textarea ref={notesRef} className="form-input" placeholder="Dietary requirements, allergies, special arrangements..." rows={2} />
               </div>
@@ -115,7 +114,7 @@ export default function ReservationSection() {
               <div className="res-info-icon">📞</div>
               <div>
                 <div className="res-info-title">Direct Contact</div>
-                <div className="res-info-text">Call for group bookings (10+) or special event arrangements.</div>
+                <div className="res-info-text">Call 090488 44099 for group bookings (10+) or special event arrangements.</div>
               </div>
             </div>
             <div className="res-info-card">

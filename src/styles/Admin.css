@@ -159,6 +159,14 @@
   margin-bottom: 0.35rem;
 }
 
+.admin-greeting {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--plum);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.2rem;
+}
+
 .admin-page-sub {
   color: var(--muted);
   font-size: 0.875rem;
@@ -446,6 +454,65 @@
   color: #555;
 }
 
+.team-role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 0.3rem 0.72rem;
+  border-radius: 999px;
+  background: rgba(111, 29, 78, 0.12);
+  border: 1px solid rgba(111, 29, 78, 0.22);
+  color: var(--plum);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.team-role-badge.role-owner {
+  background: rgba(111, 29, 78, 0.18);
+  border-color: rgba(111, 29, 78, 0.38);
+  color: #5d1742;
+}
+
+.team-role-badge.role-manager {
+  background: rgba(26, 92, 82, 0.16);
+  border-color: rgba(26, 92, 82, 0.34);
+  color: #0f6154;
+}
+
+.team-role-badge.role-frontdesk {
+  background: rgba(36, 89, 167, 0.16);
+  border-color: rgba(36, 89, 167, 0.34);
+  color: #1f4f96;
+}
+
+.team-role-badge.role-servicemanager,
+.team-role-badge.role-service-manager {
+  background: rgba(133, 85, 198, 0.16);
+  border-color: rgba(133, 85, 198, 0.34);
+  color: #6537a5;
+}
+
+.team-role-badge.role-assistant {
+  background: rgba(212, 168, 71, 0.18);
+  border-color: rgba(212, 168, 71, 0.34);
+  color: #7a5a00;
+}
+
+.team-role-badge.role-waiter {
+  background: rgba(189, 72, 54, 0.16);
+  border-color: rgba(189, 72, 54, 0.34);
+  color: #9c2f20;
+}
+
+.team-role-badge.role-customer {
+  background: rgba(74, 85, 104, 0.14);
+  border-color: rgba(74, 85, 104, 0.24);
+  color: #364152;
+}
+
 /* attendance badges */
 .attendance-badge {
   display: inline-flex;
@@ -653,6 +720,16 @@
 
 .admin-edit-grid .span2 {
   grid-column: span 2;
+}
+
+.team-edit-modal {
+  max-width: 760px;
+}
+
+.team-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .admin-add-btn {
@@ -1024,7 +1101,8 @@
   }
 
   .admin-add-grid,
-  .admin-edit-grid {
+  .admin-edit-grid,
+  .team-edit-grid {
     grid-template-columns: 1fr;
   }
 

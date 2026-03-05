@@ -34,11 +34,11 @@ function AppInner() {
 
   return (
     <>
-      {!adminOnly && <Navbar />}
-      {!adminOnly && currentPage === 'home' && <div style={{ paddingTop: 70 }}><HomePage /></div>}
-      {!adminOnly && currentPage === 'customer' && <CustomerPage />}
-      {showAdminPage && <AdminPage adminOnly={adminOnly} />}
-      {adminOnly && (
+      {!showAdminPage && <Navbar />}
+      {!showAdminPage && currentPage === 'home' && <div style={{ paddingTop: 70 }}><HomePage /></div>}
+      {!showAdminPage && currentPage === 'customer' && <CustomerPage />}
+      {showAdminPage && <AdminPage adminOnly={showAdminPage} />}
+      {showAdminPage && (
         <button
           onClick={logoutCustomer}
           style={{
@@ -59,9 +59,9 @@ function AppInner() {
           Logout
         </button>
       )}
-      {!adminOnly && <CartSidebar />}
-      {!adminOnly && <CartFab />}
-      {!adminOnly && <CheckoutModal />}
+      {!showAdminPage && <CartSidebar />}
+      {!showAdminPage && <CartFab />}
+      {!showAdminPage && <CheckoutModal />}
       <Toast />
     </>
   );

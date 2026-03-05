@@ -8,6 +8,7 @@ const { STAFF_ROLES } = require('../config/roles');
 
 const router = express.Router();
 const ADMIN_PANEL_ROLES = STAFF_ROLES;
+const SEX_OPTIONS = ['male', 'female', 'other', 'prefer_not_to_say'];
 
 router.get('/health', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLES), (req, res) => {
   res.json({ ok: true, role: req.user.role, email: req.user.email });
@@ -15,8 +16,8 @@ router.get('/health', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROL
 
 router.get('/users', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLES), async (_req, res) => {
   const [admins, customers] = await Promise.all([
-    Admin.find({}, 'name email phone role createdAt').sort({ createdAt: -1 }),
-    Customer.find({}, 'name email phone role createdAt').sort({ createdAt: -1 }),
+    Admin.find({}, 'name email phone sex role createdAt').sort({ createdAt: -1 }),
+    Customer.find({}, 'name email phone sex role createdAt').sort({ createdAt: -1 }),
   ]);
 
   const users = [
@@ -26,6 +27,7 @@ router.get('/users', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLE
       name: u.name,
       email: u.email,
       phone: u.phone || '',
+      sex: u.sex || 'prefer_not_to_say',
       role: u.role,
       createdAt: u.createdAt,
     })),
@@ -35,6 +37,7 @@ router.get('/users', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLE
       name: u.name,
       email: u.email,
       phone: u.phone || '',
+      sex: u.sex || 'prefer_not_to_say',
       role: 'customer',
       createdAt: u.createdAt,
     })),
@@ -47,17 +50,21 @@ router.get('/users', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLE
 });
 
 router.post('/users/admin', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLES), async (req, res) => {
-  const { name, email, phone, password, role } = req.body || {};
+  const { name, email, phone, password, role, sex } = req.body || {};
   const safeName = String(name || '').trim();
   const safeEmail = String(email || '').toLowerCase().trim();
   const safePhone = String(phone || '').trim();
   const safePassword = String(password || '');
+  const safeSex = String(sex || 'prefer_not_to_say').trim();
 
   if (!safeName || !safeEmail || !safePassword || !role) {
     return res.status(400).json({ error: 'Name, email, password and role are required' });
   }
   if (!STAFF_ROLES.includes(role)) {
     return res.status(400).json({ error: 'Invalid team role' });
+  }
+  if (!SEX_OPTIONS.includes(safeSex)) {
+    return res.status(400).json({ error: 'Invalid sex value' });
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safeEmail)) {
     return res.status(400).json({ error: 'Invalid email format' });
@@ -79,6 +86,7 @@ router.post('/users/admin', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PAN
     name: safeName,
     email: safeEmail,
     phone: safePhone,
+    sex: safeSex,
     passwordHash,
     role,
   });
@@ -91,6 +99,7 @@ router.post('/users/admin', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PAN
       name: created.name,
       email: created.email,
       phone: created.phone || '',
+      sex: created.sex || 'prefer_not_to_say',
       role: created.role,
     },
   });
@@ -120,6 +129,7 @@ router.patch('/users/:accountType/:id/role', ensureDbReady, requireAuth, require
         name: admin.name,
         email: admin.email,
         phone: admin.phone || '',
+        sex: admin.sex || 'prefer_not_to_say',
         passwordHash: admin.passwordHash,
         role: 'customer',
       });
@@ -147,6 +157,7 @@ router.patch('/users/:accountType/:id/role', ensureDbReady, requireAuth, require
     name: customer.name,
     email: customer.email,
     phone: customer.phone || '',
+    sex: customer.sex || 'prefer_not_to_say',
     passwordHash: customer.passwordHash,
     role,
   });
@@ -164,6 +175,7 @@ router.patch('/users/:accountType/:id/profile', ensureDbReady, requireAuth, requ
   const name = String(req.body?.name || '').trim();
   const email = String(req.body?.email || '').toLowerCase().trim();
   const phone = String(req.body?.phone || '').trim();
+  const sex = String(req.body?.sex || 'prefer_not_to_say').trim();
 
   if (!name || !email) {
     return res.status(400).json({ error: 'Name and email are required' });
@@ -171,6 +183,9 @@ router.patch('/users/:accountType/:id/profile', ensureDbReady, requireAuth, requ
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email format' });
+  }
+  if (!SEX_OPTIONS.includes(sex)) {
+    return res.status(400).json({ error: 'Invalid sex value' });
   }
 
   const [adminConflict, customerConflict] = await Promise.all([
@@ -188,6 +203,7 @@ router.patch('/users/:accountType/:id/profile', ensureDbReady, requireAuth, requ
   user.name = name;
   user.email = email;
   user.phone = phone;
+  user.sex = sex;
   await user.save();
 
   return res.json({
@@ -198,6 +214,7 @@ router.patch('/users/:accountType/:id/profile', ensureDbReady, requireAuth, requ
       name: user.name,
       email: user.email,
       phone: user.phone || '',
+      sex: user.sex || 'prefer_not_to_say',
       role: user.role,
     },
   });

@@ -27,7 +27,6 @@ export default function CustomerPage() {
   const [email, setEmail] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [adminAccessMode, setAdminAccessMode] = React.useState(false);
 
   const handleLogin = async () => {
     try {
@@ -35,16 +34,13 @@ export default function CustomerPage() {
         showToast('Please enter your email and password.', 'error');
         return;
       }
-      const user = await loginCustomer({ email: email.trim(), password, adminMode: adminAccessMode });
+      const user = await loginCustomer({ email: email.trim(), password });
       const isStaff = ['owner', 'frontdesk', 'service_manager', 'assistant', 'waiter'].includes(user.role);
-      if (adminAccessMode && !isStaff) {
-        logoutCustomer();
-        showToast('This account is not allowed for admin access.', 'error');
-        return;
-      }
       showToast(`Welcome back, ${user.name}! 👋`, 'success');
-      if (adminAccessMode && isStaff) {
+      if (isStaff) {
         setCurrentPage('admin');
+      } else {
+        setCurrentPage('customer');
       }
     } catch (err) {
       showToast(err.message || 'Login failed.', 'error');
@@ -78,7 +74,6 @@ export default function CustomerPage() {
   const myReservations = customer
     ? reservations.filter(r => r.name === customer.name || r.email === customer.email)
     : [];
-  const canAccessAdmin = ['owner', 'frontdesk', 'service_manager', 'assistant', 'waiter'].includes(customer?.role);
 
   return (
     <div className="customer-page">
@@ -89,13 +84,6 @@ export default function CustomerPage() {
           <div className="customer-auth">
             <div className="customer-auth-head">
               <div className="customer-auth-title">My Account</div>
-              <button className="dark-mode-toggle" onClick={() => setAdminAccessMode(v => !v)}>
-                <div className={`toggle-track ${adminAccessMode ? 'on' : ''}`}>
-                  <div className={`toggle-thumb ${adminAccessMode ? 'on' : ''}`} />
-                </div>
-                <span className="access-label-desktop">{adminAccessMode ? '🛡️ Admin Access' : '👤 Customer Access'}</span>
-                <span className="access-label-mobile">{adminAccessMode ? '🛡️ Admin' : '👤 Customer'}</span>
-              </button>
             </div>
             <div className="customer-auth-sub">Sign in or create an account to track your orders, reservations and reviews.</div>
 
@@ -149,11 +137,6 @@ export default function CustomerPage() {
                 Hey, <span>{customer.name}</span> 👋
               </div>
               <div className="customer-header-actions">
-                {canAccessAdmin && (
-                  <button className="customer-admin-btn" onClick={() => setCurrentPage('admin')}>
-                    Switch to Admin
-                  </button>
-                )}
                 <button className="customer-logout-btn" onClick={handleLogout}>Sign Out</button>
               </div>
             </div>

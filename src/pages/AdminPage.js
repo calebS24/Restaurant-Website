@@ -35,12 +35,14 @@ const ATTENDANCE_OPTIONS = [
 
 // ── Dashboard ────────────────────────────────────────────────
 function Dashboard({ onNavigate }) {
-  const { menuData, reservations, orders, reviews } = useApp();
+  const { menuData, reservations, orders, reviews, customer } = useApp();
+  const userName = customer?.name || 'User';
 
   const conflicts = reservations.filter(r => r.status === 'unavailable');
 
   return (
     <div>
+      <div className="admin-greeting">Hi {userName} 👋,</div>
       <div className="admin-page-title">Dashboard</div>
       <div className="admin-page-sub">Overview of The Venice Food Hub</div>
 
@@ -356,11 +358,16 @@ function Reservations() {
 
 // ── Menu Management ───────────────────────────────────────────
 function MenuManagement() {
-  const { menuData, addMenuItem, removeMenuItem, updateMenuItem, showToast } = useApp();
+  const { menuData, addMenuItem, removeMenuItem, updateMenuItem, showToast, customer } = useApp();
   const [form, setForm] = useState({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '', imgMode: 'url' });
   const [editItem, setEditItem] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '', imgMode: 'url' });
   const [showAddForm, setShowAddForm] = useState(false);
+  const canEdit = ['owner', 'manager'].includes((customer?.role || '').toLowerCase());
+
+  const showEditPermissionToast = () => {
+    showToast('You currently have view-only access. Please contact an administrator for edit permissions.', 'error');
+  };
 
   const handleAdd = () => {
     if (!form.name || !form.price) { showToast('Name and price are required.', 'error'); return; }
@@ -374,6 +381,10 @@ function MenuManagement() {
   const ef = (k) => ({ value: editForm[k], onChange: e => setEditForm(p => ({ ...p, [k]: e.target.value })) });
 
   const handleStartEdit = (item) => {
+    if (!canEdit) {
+      showEditPermissionToast();
+      return;
+    }
     setEditItem(item);
     setEditForm({
       name: item.name || '',
@@ -405,6 +416,10 @@ function MenuManagement() {
   };
 
   const handleSaveEdit = () => {
+    if (!canEdit) {
+      showEditPermissionToast();
+      return;
+    }
     if (!editItem) return;
     if (!editForm.name || !editForm.price) { showToast('Name and price are required.', 'error'); return; }
     updateMenuItem(editItem.id, {
@@ -751,17 +766,23 @@ function AdminReviews() {
 
 // ── Team Roles ───────────────────────────────────────────────
 function TeamRoles() {
-  const { authToken, showToast } = useApp();
+  const { authToken, showToast, customer } = useApp();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState('');
   const [editingUser, setEditingUser] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', sex: 'prefer_not_to_say', role: 'assistant' });
   const [deletingId, setDeletingId] = useState('');
-  const [addForm, setAddForm] = useState({ name: '', email: '', phone: '', password: '', role: 'assistant' });
+  const [addForm, setAddForm] = useState({ name: '', email: '', phone: '', sex: 'prefer_not_to_say', password: '', role: 'assistant' });
   const [addingMember, setAddingMember] = useState(false);
   const [showAddTeamForm, setShowAddTeamForm] = useState(false);
+  const [nameQuery, setNameQuery] = useState('');
+  const canEdit = ['owner', 'manager'].includes((customer?.role || '').toLowerCase());
+
+  const showEditPermissionToast = () => {
+    showToast('You currently have view-only access. Please contact an administrator for edit permissions.', 'error');
+  };
 
   const loadUsers = async () => {
     setLoading(true);
@@ -784,38 +805,22 @@ function TeamRoles() {
     loadUsers();
   }, [authToken]);
 
-  const updateRole = async (id, accountType, role) => {
-    setSavingId(id);
-    try {
-      const res = await fetch(`/api/admin/users/${accountType}/${id}/role`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ role }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Failed to update role');
-      await loadUsers();
-      showToast('Role updated successfully.', 'success');
-    } catch (err) {
-      showToast(err.message || 'Role update failed.', 'error');
-    } finally {
-      setSavingId('');
-    }
-  };
-
   const startEdit = (user) => {
     setEditingUser(user);
     setEditForm({
       name: user.name || '',
       email: user.email || '',
       phone: user.phone || '',
+      sex: user.sex || 'prefer_not_to_say',
+      role: user.role || 'assistant',
     });
   };
 
   const saveEdit = async () => {
+    if (!canEdit) {
+      showEditPermissionToast();
+      return;
+    }
     if (!editingUser) return;
     if (!editForm.name.trim() || !editForm.email.trim()) {
       showToast('Name and email are required.', 'error');
@@ -833,10 +838,25 @@ function TeamRoles() {
           name: editForm.name.trim(),
           email: editForm.email.trim(),
           phone: editForm.phone.trim(),
+          sex: editForm.sex,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Failed to update profile');
+
+      if (editingUser.accountType === 'admin' && editForm.role !== editingUser.role) {
+        const roleRes = await fetch(`/api/admin/users/${editingUser.accountType}/${editingUser.id}/role`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ role: editForm.role }),
+        });
+        const roleData = await roleRes.json().catch(() => ({}));
+        if (!roleRes.ok) throw new Error(roleData.error || 'Failed to update role');
+      }
+
       await loadUsers();
       setEditingUser(null);
       showToast('Team member updated.', 'success');
@@ -868,10 +888,20 @@ function TeamRoles() {
   };
 
   const teamRoles = roles.filter(r => r !== 'customer');
+  const sexOptions = [
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'other', label: 'Other' },
+    { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+  ];
+  const sexLabel = (value) => sexOptions.find(s => s.value === value)?.label || 'Prefer not to say';
   const af = (k) => ({
     value: addForm[k],
     onChange: (e) => setAddForm(prev => ({ ...prev, [k]: e.target.value })),
   });
+  const visibleUsers = users.filter(u =>
+    String(u.name || '').toLowerCase().includes(nameQuery.trim().toLowerCase())
+  );
 
   const addTeamMember = async () => {
     if (!addForm.name.trim() || !addForm.email.trim() || !addForm.password.trim() || !addForm.role) {
@@ -891,6 +921,7 @@ function TeamRoles() {
           name: addForm.name.trim(),
           email: addForm.email.trim(),
           phone: addForm.phone.trim(),
+          sex: addForm.sex,
           password: addForm.password,
           role: addForm.role,
         }),
@@ -898,7 +929,7 @@ function TeamRoles() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Failed to add team member');
       await loadUsers();
-      setAddForm({ name: '', email: '', phone: '', password: '', role: 'assistant' });
+      setAddForm({ name: '', email: '', phone: '', sex: 'prefer_not_to_say', password: '', role: 'assistant' });
       setShowAddTeamForm(false);
       showToast('Team member added successfully.', 'success');
     } catch (err) {
@@ -915,12 +946,21 @@ function TeamRoles() {
           <div className="admin-page-title">Team Roles</div>
           <div className="admin-page-sub">Assign staff roles and control admin panel access</div>
         </div>
-        <button
-          className="admin-add-btn admin-add-toggle-btn"
-          onClick={() => setShowAddTeamForm(true)}
-        >
-          + Add Team Member
-        </button>
+        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+          <input
+            className="admin-input"
+            style={{ minWidth: '220px' }}
+            placeholder="Find by name..."
+            value={nameQuery}
+            onChange={(e) => setNameQuery(e.target.value)}
+          />
+          <button
+            className="admin-add-btn admin-add-toggle-btn"
+            onClick={() => setShowAddTeamForm(true)}
+          >
+            + Add Member
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -928,28 +968,26 @@ function TeamRoles() {
       ) : (
         <div className="admin-table-wrap">
           <table className="admin-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Action</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Sex</th><th>Role</th><th>Action</th></tr></thead>
             <tbody>
-              {users.map(u => (
+              {visibleUsers.map(u => (
                 <tr key={u.id}>
                   <td><strong>{u.name}</strong></td>
                   <td>{u.email}</td>
                   <td>{u.phone || '—'}</td>
+                  <td>{sexLabel(u.sex || 'prefer_not_to_say')}</td>
                   <td>
-                    <select
-                      className="admin-input"
-                      value={u.role}
-                      disabled={savingId === u.id}
-                      onChange={e => updateRole(u.id, u.accountType, e.target.value)}
+                    <span
+                      className={`team-role-badge role-${(u.role || 'customer').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
                     >
-                      {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                      {u.role || 'customer'}
+                    </span>
                   </td>
                   <td>
                     <button
                       className="admin-action-btn neutral"
                       disabled={savingId === u.id || deletingId === u.id}
-                      onClick={() => startEdit(u)}
+                      onClick={() => (canEdit ? startEdit(u) : showEditPermissionToast())}
                     >
                       Edit
                     </button>
@@ -964,8 +1002,8 @@ function TeamRoles() {
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && (
-                <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: '1.5rem' }}>No users found.</td></tr>
+              {visibleUsers.length === 0 && (
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--muted)', padding: '1.5rem' }}>No users match this name.</td></tr>
               )}
             </tbody>
           </table>
@@ -974,11 +1012,11 @@ function TeamRoles() {
 
       {editingUser && (
         <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) setEditingUser(null); }}>
-          <div className="modal">
+          <div className="modal team-edit-modal">
             <div className="modal-title">Edit Team Member</div>
-            <div className="modal-sub">{editingUser.role}</div>
+            <div className="modal-sub">{editingUser.accountType}</div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div className="team-edit-grid">
               <div>
                 <label className="admin-label">Name</label>
                 <input
@@ -1006,6 +1044,30 @@ function TeamRoles() {
                   onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                   placeholder="+91 XXXXX XXXXX"
                 />
+              </div>
+              <div>
+                <label className="admin-label">Sex</label>
+                <select
+                  className="admin-input"
+                  value={editForm.sex}
+                  onChange={e => setEditForm(prev => ({ ...prev, sex: e.target.value }))}
+                >
+                  {sexOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="admin-label">Role</label>
+                {editingUser.accountType === 'admin' ? (
+                  <select
+                    className="admin-input"
+                    value={editForm.role}
+                    onChange={e => setEditForm(prev => ({ ...prev, role: e.target.value }))}
+                  >
+                    {teamRoles.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                ) : (
+                  <input className="admin-input" value="customer" disabled />
+                )}
               </div>
             </div>
 
@@ -1037,6 +1099,12 @@ function TeamRoles() {
               <div>
                 <label className="admin-label">Phone</label>
                 <input className="admin-input" placeholder="+91 XXXXX XXXXX" {...af('phone')} />
+              </div>
+              <div>
+                <label className="admin-label">Sex</label>
+                <select className="admin-input" {...af('sex')}>
+                  {sexOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
               </div>
               <div>
                 <label className="admin-label">Password *</label>
