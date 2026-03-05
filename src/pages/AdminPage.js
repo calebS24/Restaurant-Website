@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import '../styles/Admin.css';
 
+const FALLBACK_MENU_IMG = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80';
+
 const TABS = [
   { key: 'dashboard', icon: '📊', label: 'Dashboard' },
   { key: 'reservations', icon: '📅', label: 'Reservations' },
@@ -32,7 +34,7 @@ const ATTENDANCE_OPTIONS = [
 ];
 
 // ── Dashboard ────────────────────────────────────────────────
-function Dashboard() {
+function Dashboard({ onNavigate }) {
   const { menuData, reservations, orders, reviews } = useApp();
 
   const conflicts = reservations.filter(r => r.status === 'unavailable');
@@ -43,10 +45,18 @@ function Dashboard() {
       <div className="admin-page-sub">Overview of The Venice Food Hub</div>
 
       <div className="admin-stats-grid">
-        <div className="admin-stat-card"><div className="admin-stat-icon">🍽</div><div className="admin-stat-val">{menuData.length}</div><div className="admin-stat-label">Menu Items</div></div>
-        <div className="admin-stat-card"><div className="admin-stat-icon">📅</div><div className="admin-stat-val">{reservations.length}</div><div className="admin-stat-label">Reservations</div></div>
-        <div className="admin-stat-card"><div className="admin-stat-icon">📦</div><div className="admin-stat-val">{orders.length}</div><div className="admin-stat-label">Orders Today</div></div>
-        <div className="admin-stat-card"><div className="admin-stat-icon">⭐</div><div className="admin-stat-val">{reviews.length}</div><div className="admin-stat-label">Reviews</div></div>
+        <button className="admin-stat-card stat-link" type="button" onClick={() => onNavigate('menu')}>
+          <div className="admin-stat-icon">🍽</div><div className="admin-stat-val">{menuData.length}</div><div className="admin-stat-label">Menu Items</div>
+        </button>
+        <button className="admin-stat-card stat-link" type="button" onClick={() => onNavigate('reservations')}>
+          <div className="admin-stat-icon">📅</div><div className="admin-stat-val">{reservations.length}</div><div className="admin-stat-label">Reservations</div>
+        </button>
+        <button className="admin-stat-card stat-link" type="button" onClick={() => onNavigate('orders')}>
+          <div className="admin-stat-icon">📦</div><div className="admin-stat-val">{orders.length}</div><div className="admin-stat-label">Orders Today</div>
+        </button>
+        <button className="admin-stat-card stat-link" type="button" onClick={() => onNavigate('reviews')}>
+          <div className="admin-stat-icon">⭐</div><div className="admin-stat-val">{reviews.length}</div><div className="admin-stat-label">Reviews</div>
+        </button>
       </div>
 
       {conflicts.length > 0 && (
@@ -66,8 +76,19 @@ function Dashboard() {
 
 // ── Reservations ─────────────────────────────────────────────
 function Reservations() {
-  const { reservations, updateReservation, removeReservation, setRescheduleModal, showToast } = useApp();
+  const { reservations, addReservation, updateReservation, removeReservation, setRescheduleModal, showToast } = useApp();
   const [contactModal, setContactModal] = useState(null);
+  const [showAddReservationForm, setShowAddReservationForm] = useState(false);
+  const [newReservation, setNewReservation] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    date: '',
+    time: '',
+    guests: '2 People',
+    occasion: 'Regular Dining',
+    notes: '',
+  });
 
   const handleAttendance = (id, val) => {
     updateReservation(id, { attendance: val });
@@ -84,10 +105,55 @@ function Reservations() {
     showToast('Reservation removed.', '');
   };
 
+  const nr = (k) => ({
+    value: newReservation[k],
+    onChange: (e) => setNewReservation(prev => ({ ...prev, [k]: e.target.value })),
+  });
+
+  const handleAddReservation = () => {
+    if (!newReservation.name.trim() || !newReservation.phone.trim() || !newReservation.email.trim() || !newReservation.date || !newReservation.time) {
+      showToast('Name, phone, email, date and time are required.', 'error');
+      return;
+    }
+
+    addReservation({
+      name: newReservation.name.trim(),
+      phone: newReservation.phone.trim(),
+      email: newReservation.email.trim(),
+      date: newReservation.date,
+      time: newReservation.time,
+      guests: newReservation.guests,
+      occasion: newReservation.occasion,
+      notes: newReservation.notes.trim(),
+    });
+    setNewReservation({
+      name: '',
+      phone: '',
+      email: '',
+      date: '',
+      time: '',
+      guests: '2 People',
+      occasion: 'Regular Dining',
+      notes: '',
+    });
+    setShowAddReservationForm(false);
+    showToast('Reservation added successfully.', 'success');
+  };
+
   return (
     <div>
-      <div className="admin-page-title">Reservations</div>
-      <div className="admin-page-sub">Manage table bookings and attendance</div>
+      <div className="admin-head-row">
+        <div>
+          <div className="admin-page-title">Reservations</div>
+          <div className="admin-page-sub">Manage table bookings and attendance</div>
+        </div>
+        <button
+          className="admin-add-btn admin-add-toggle-btn"
+          onClick={() => setShowAddReservationForm(true)}
+        >
+          + Make Reservation
+        </button>
+      </div>
 
       <div className="admin-table-wrap">
         <table className="admin-table">
@@ -203,6 +269,69 @@ function Reservations() {
           </div>
         </div>
       )}
+
+      {/* Add Reservation Modal */}
+      {showAddReservationForm && (
+        <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) setShowAddReservationForm(false); }}>
+          <div className="modal">
+            <div className="modal-title">Make Reservation</div>
+            <div className="modal-sub">Create a new booking from admin panel</div>
+
+            <div className="admin-add-grid">
+              <div>
+                <label className="admin-label">Name *</label>
+                <input className="admin-input" placeholder="Guest name" {...nr('name')} />
+              </div>
+              <div>
+                <label className="admin-label">Phone *</label>
+                <input className="admin-input" placeholder="+91 XXXXX XXXXX" {...nr('phone')} />
+              </div>
+              <div>
+                <label className="admin-label">Email *</label>
+                <input className="admin-input" type="email" placeholder="guest@email.com" {...nr('email')} />
+              </div>
+              <div>
+                <label className="admin-label">Date *</label>
+                <input className="admin-input" type="date" {...nr('date')} />
+              </div>
+              <div>
+                <label className="admin-label">Time *</label>
+                <select className="admin-input" {...nr('time')}>
+                  <option value="">Select time</option>
+                  {['11:00 AM','11:30 AM','12:00 PM','12:30 PM','01:00 PM','01:30 PM','02:00 PM','03:00 PM',
+                    '06:00 PM','06:30 PM','07:00 PM','07:30 PM','08:00 PM','08:30 PM','09:00 PM','09:30 PM','10:00 PM']
+                    .map(t => <option key={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="admin-label">Guests</label>
+                <select className="admin-input" {...nr('guests')}>
+                  {['1 Person', '2 People', '3 People', '4 People', '5 People', '6 People', '7 People', '8 People', '9 People', '10+ People']
+                    .map(g => <option key={g}>{g}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="admin-label">Occasion</label>
+                <select className="admin-input" {...nr('occasion')}>
+                  {['Regular Dining', 'Birthday', 'Anniversary', 'Family Gathering', 'Business Dinner', 'Other']
+                    .map(o => <option key={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="span2">
+                <label className="admin-label">Notes</label>
+                <input className="admin-input" placeholder="Any special request..." {...nr('notes')} />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setShowAddReservationForm(false)}>Cancel</button>
+              <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={handleAddReservation}>
+                + Add Reservation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -213,11 +342,13 @@ function MenuManagement() {
   const [form, setForm] = useState({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '' });
   const [editItem, setEditItem] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '', imgMode: 'url' });
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const handleAdd = () => {
     if (!form.name || !form.price) { showToast('Name and price are required.', 'error'); return; }
     addMenuItem({ ...form, price: parseInt(form.price), img: form.img || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80' });
     setForm({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '' });
+    setShowAddForm(false);
     showToast(`"${form.name}" added to menu! 🎉`, 'success');
   };
 
@@ -263,33 +394,44 @@ function MenuManagement() {
 
   return (
     <div>
-      <div className="admin-page-title">Menu Management</div>
-      <div className="admin-page-sub">Add or remove menu items</div>
+      <div className="admin-head-row">
+        <div>
+          <div className="admin-page-title">Menu Management</div>
+          <div className="admin-page-sub">Add or remove menu items</div>
+        </div>
+        <button
+          className="admin-add-btn admin-add-toggle-btn"
+          onClick={() => setShowAddForm(v => !v)}
+        >
+          {showAddForm ? 'Cancel' : '+ Add New Item'}
+        </button>
+      </div>
 
-      <div className="admin-add-form">
-        <div className="admin-add-form-title">+ Add New Item</div>
-        <div className="admin-add-grid">
-          <div><label className="admin-label">Name *</label><input className="admin-input" placeholder="Dish name" {...f('name')} /></div>
-          <div><label className="admin-label">Price (₹) *</label><input className="admin-input" type="number" placeholder="150" {...f('price')} /></div>
-          <div>
-            <label className="admin-label">Category</label>
-            <select className="admin-input" {...f('cat')}>
-              {['kerala','chinese','south-indian','beverages','desserts'].map(c => <option key={c}>{c}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="admin-label">Type</label>
-            <select className="admin-input" {...f('type')}>
-              <option value="veg">Veg</option><option value="non-veg">Non-Veg</option>
-            </select>
-          </div>
-          <div><label className="admin-label">Description</label><input className="admin-input" placeholder="Short description" {...f('desc')} /></div>
-          <div><label className="admin-label">Image URL</label><input className="admin-input" placeholder="https://..." {...f('img')} /></div>
-          <div className="span3">
-            <button className="admin-add-btn" onClick={handleAdd}>+ Add to Menu</button>
+      {showAddForm && (
+        <div className="admin-add-form">
+          <div className="admin-add-grid">
+            <div><label className="admin-label">Name *</label><input className="admin-input" placeholder="Dish name" {...f('name')} /></div>
+            <div><label className="admin-label">Price (₹) *</label><input className="admin-input" type="number" placeholder="150" {...f('price')} /></div>
+            <div>
+              <label className="admin-label">Category</label>
+              <select className="admin-input" {...f('cat')}>
+                {['kerala','chinese','south-indian','beverages','desserts'].map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="admin-label">Type</label>
+              <select className="admin-input" {...f('type')}>
+                <option value="veg">Veg</option><option value="non-veg">Non-Veg</option>
+              </select>
+            </div>
+            <div><label className="admin-label">Description</label><input className="admin-input" placeholder="Short description" {...f('desc')} /></div>
+            <div><label className="admin-label">Image URL</label><input className="admin-input" placeholder="https://..." {...f('img')} /></div>
+            <div className="span3">
+              <button className="admin-add-btn" onClick={handleAdd}>+ Add to Menu</button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="admin-table-wrap">
         <table className="admin-table">
@@ -297,7 +439,17 @@ function MenuManagement() {
           <tbody>
             {menuData.map(item => (
               <tr key={item.id}>
-                <td><img src={item.img} alt={item.name} style={{ width: 50, height: 50, borderRadius: 8, objectFit: 'cover' }} /></td>
+                <td>
+                  <img
+                    src={item.img}
+                    alt={item.name}
+                    style={{ width: 50, height: 50, borderRadius: 8, objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = FALLBACK_MENU_IMG;
+                    }}
+                  />
+                </td>
                 <td><strong>{item.name}</strong><br /><span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{item.desc?.substring(0, 50)}...</span></td>
                 <td><span style={{ textTransform: 'capitalize' }}>{item.cat}</span></td>
                 <td style={{ fontWeight: 700, color: 'var(--spice)' }}>₹{item.price}</td>
@@ -517,6 +669,9 @@ function TeamRoles() {
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
   const [deletingId, setDeletingId] = useState('');
+  const [addForm, setAddForm] = useState({ name: '', email: '', phone: '', password: '', role: 'assistant' });
+  const [addingMember, setAddingMember] = useState(false);
+  const [showAddTeamForm, setShowAddTeamForm] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -622,10 +777,95 @@ function TeamRoles() {
     }
   };
 
+  const teamRoles = roles.filter(r => r !== 'customer');
+  const af = (k) => ({
+    value: addForm[k],
+    onChange: (e) => setAddForm(prev => ({ ...prev, [k]: e.target.value })),
+  });
+
+  const addTeamMember = async () => {
+    if (!addForm.name.trim() || !addForm.email.trim() || !addForm.password.trim() || !addForm.role) {
+      showToast('Name, email, password and role are required.', 'error');
+      return;
+    }
+
+    setAddingMember(true);
+    try {
+      const res = await fetch('/api/admin/users/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          name: addForm.name.trim(),
+          email: addForm.email.trim(),
+          phone: addForm.phone.trim(),
+          password: addForm.password,
+          role: addForm.role,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to add team member');
+      await loadUsers();
+      setAddForm({ name: '', email: '', phone: '', password: '', role: 'assistant' });
+      setShowAddTeamForm(false);
+      showToast('Team member added successfully.', 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to add team member.', 'error');
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
   return (
     <div>
-      <div className="admin-page-title">Team Roles</div>
-      <div className="admin-page-sub">Assign staff roles and control admin panel access</div>
+      <div className="admin-head-row">
+        <div>
+          <div className="admin-page-title">Team Roles</div>
+          <div className="admin-page-sub">Assign staff roles and control admin panel access</div>
+        </div>
+        <button
+          className="admin-add-btn admin-add-toggle-btn"
+          onClick={() => setShowAddTeamForm(v => !v)}
+        >
+          {showAddTeamForm ? 'Cancel' : '+ Add Team Member'}
+        </button>
+      </div>
+
+      {showAddTeamForm && (
+        <div className="admin-add-form" style={{ marginBottom: '1.1rem' }}>
+          <div className="admin-add-grid">
+            <div>
+              <label className="admin-label">Name *</label>
+              <input className="admin-input" placeholder="Full name" {...af('name')} />
+            </div>
+            <div>
+              <label className="admin-label">Email *</label>
+              <input className="admin-input" type="email" placeholder="email@example.com" {...af('email')} />
+            </div>
+            <div>
+              <label className="admin-label">Phone</label>
+              <input className="admin-input" placeholder="+91 XXXXX XXXXX" {...af('phone')} />
+            </div>
+            <div>
+              <label className="admin-label">Password *</label>
+              <input className="admin-input" type="password" placeholder="At least 8 characters" {...af('password')} />
+            </div>
+            <div>
+              <label className="admin-label">Role *</label>
+              <select className="admin-input" {...af('role')}>
+                {teamRoles.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'end' }}>
+              <button className="admin-add-btn" onClick={addTeamMember} disabled={addingMember}>
+                {addingMember ? 'Adding...' : '+ Add Member'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="admin-empty-panel">Loading users...</div>
@@ -815,14 +1055,14 @@ export default function AdminPage({ adminOnly = false }) {
     return () => window.removeEventListener('popstate', syncFromUrl);
   }, []);
 
-  const TabContent = {
-    dashboard: Dashboard,
-    reservations: Reservations,
-    menu: MenuManagement,
-    orders: Orders,
-    reviews: AdminReviews,
-    team: TeamRoles,
-  }[activeTab];
+  const renderTabContent = () => {
+    if (activeTab === 'dashboard') return <Dashboard onNavigate={navigateAdminTab} />;
+    if (activeTab === 'reservations') return <Reservations />;
+    if (activeTab === 'menu') return <MenuManagement />;
+    if (activeTab === 'orders') return <Orders />;
+    if (activeTab === 'reviews') return <AdminReviews />;
+    return <TeamRoles />;
+  };
 
   return (
     <div className={`admin-page ${adminOnly ? 'admin-only' : ''}`}>
@@ -856,7 +1096,7 @@ export default function AdminPage({ adminOnly = false }) {
           ))}
         </aside>
         <main className="admin-content">
-          <TabContent />
+          {renderTabContent()}
         </main>
       </div>
       {rescheduleModal && <RescheduleModal />}

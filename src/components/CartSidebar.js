@@ -2,6 +2,8 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 
+const FALLBACK_MENU_IMG = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80';
+
 export default function CartSidebar() {
   const {
     cart, addToCart, removeFromCart,
@@ -44,7 +46,15 @@ export default function CartSidebar() {
           ) : (
             items.map(item => (
               <div className="cart-item" key={item.id}>
-                <img className="cart-item-img" src={item.img} alt={item.name} />
+                <img
+                  className="cart-item-img"
+                  src={item.img}
+                  alt={item.name}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK_MENU_IMG;
+                  }}
+                />
                 <div>
                   <div className="cart-item-name">{item.name}</div>
                   <div className="cart-item-price">₹{item.price * item.qty}</div>

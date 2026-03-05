@@ -147,6 +147,10 @@
   min-width: 0;
 }
 
+.admin-page.admin-only .admin-content {
+  padding-top: 4.8rem;
+}
+
 .admin-page-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.8rem;
@@ -175,6 +179,38 @@
   padding: 1.5rem;
   border: 1px solid rgba(200, 68, 10, 0.08);
   box-shadow: 0 2px 8px rgba(30, 26, 22, 0.05);
+}
+
+.admin-stat-card.stat-link {
+  position: relative;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-stat-card.stat-link::after {
+  content: '↗';
+  position: absolute;
+  top: 0.8rem;
+  right: 0.9rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(111, 29, 78, 0.85);
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.admin-stat-card.stat-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(111, 29, 78, 0.38);
+  box-shadow: 0 8px 20px rgba(30, 26, 22, 0.12);
+}
+
+.admin-stat-card.stat-link:hover::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .admin-stat-icon {
@@ -581,6 +617,18 @@
   margin-bottom: 1rem;
 }
 
+.admin-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-add-toggle-btn {
+  min-width: 160px;
+  align-self: flex-start;
+}
+
 .admin-add-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -871,6 +919,9 @@
   .admin-content {
     padding: 1.15rem;
   }
+  .admin-page.admin-only .admin-content {
+    padding-top: 4.2rem;
+  }
 
   .admin-table-wrap {
     border-radius: 14px;
@@ -962,6 +1013,16 @@
   .admin-add-grid,
   .admin-edit-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-head-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-add-toggle-btn {
+    width: 100%;
+    min-width: 0;
   }
 
   .admin-add-grid .span2,

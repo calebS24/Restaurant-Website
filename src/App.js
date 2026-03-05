@@ -13,22 +13,24 @@ import './styles/global.css';
 import './styles/sections.css';
 
 function AppInner() {
-  const { currentPage, customer, setCurrentPage, adminSession, logoutCustomer } = useApp();
+  const { currentPage, customer, setCurrentPage, adminSession, logoutCustomer, authLoading } = useApp();
   const canAccessAdmin = ['owner', 'frontdesk', 'service_manager', 'assistant', 'waiter'].includes(customer?.role);
   const adminOnly = adminSession && canAccessAdmin;
   const showAdminPage = (currentPage === 'admin' && canAccessAdmin) || adminOnly;
 
   React.useEffect(() => {
+    if (authLoading) return;
     if (currentPage === 'admin' && !canAccessAdmin) {
       setCurrentPage('customer', { replace: true });
     }
-  }, [currentPage, canAccessAdmin, setCurrentPage]);
+  }, [authLoading, currentPage, canAccessAdmin, setCurrentPage]);
 
   React.useEffect(() => {
+    if (authLoading) return;
     if (adminOnly && currentPage !== 'admin') {
       setCurrentPage('admin', { replace: true });
     }
-  }, [adminOnly, currentPage, setCurrentPage]);
+  }, [authLoading, adminOnly, currentPage, setCurrentPage]);
 
   return (
     <>

@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admin');
 const Customer = require('../models/Customer');
 const { requireAuth, requireAnyRole } = require('../middleware/auth');
@@ -42,6 +43,56 @@ router.get('/users', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLE
   res.json({
     users,
     roles: ['customer', ...STAFF_ROLES],
+  });
+});
+
+router.post('/users/admin', ensureDbReady, requireAuth, requireAnyRole(ADMIN_PANEL_ROLES), async (req, res) => {
+  const { name, email, phone, password, role } = req.body || {};
+  const safeName = String(name || '').trim();
+  const safeEmail = String(email || '').toLowerCase().trim();
+  const safePhone = String(phone || '').trim();
+  const safePassword = String(password || '');
+
+  if (!safeName || !safeEmail || !safePassword || !role) {
+    return res.status(400).json({ error: 'Name, email, password and role are required' });
+  }
+  if (!STAFF_ROLES.includes(role)) {
+    return res.status(400).json({ error: 'Invalid team role' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safeEmail)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  if (safePassword.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  }
+
+  const [adminExists, customerExists] = await Promise.all([
+    Admin.findOne({ email: safeEmail }).lean(),
+    Customer.findOne({ email: safeEmail }).lean(),
+  ]);
+  if (adminExists || customerExists) {
+    return res.status(409).json({ error: 'Email already exists' });
+  }
+
+  const passwordHash = await bcrypt.hash(safePassword, 10);
+  const created = await Admin.create({
+    name: safeName,
+    email: safeEmail,
+    phone: safePhone,
+    passwordHash,
+    role,
+  });
+
+  return res.status(201).json({
+    ok: true,
+    user: {
+      id: created._id.toString(),
+      accountType: 'admin',
+      name: created.name,
+      email: created.email,
+      phone: created.phone || '',
+      role: created.role,
+    },
   });
 });
 
