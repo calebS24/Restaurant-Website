@@ -339,7 +339,7 @@ function Reservations() {
 // ── Menu Management ───────────────────────────────────────────
 function MenuManagement() {
   const { menuData, addMenuItem, removeMenuItem, updateMenuItem, showToast } = useApp();
-  const [form, setForm] = useState({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '' });
+  const [form, setForm] = useState({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '', imgMode: 'url' });
   const [editItem, setEditItem] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '', imgMode: 'url' });
   const [showAddForm, setShowAddForm] = useState(false);
@@ -347,7 +347,7 @@ function MenuManagement() {
   const handleAdd = () => {
     if (!form.name || !form.price) { showToast('Name and price are required.', 'error'); return; }
     addMenuItem({ ...form, price: parseInt(form.price), img: form.img || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80' });
-    setForm({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '' });
+    setForm({ name: '', price: '', cat: 'kerala', type: 'veg', desc: '', img: '', imgMode: 'url' });
     setShowAddForm(false);
     showToast(`"${form.name}" added to menu! 🎉`, 'success');
   };
@@ -373,6 +373,15 @@ function MenuManagement() {
     const reader = new FileReader();
     reader.onload = () => {
       setEditForm(prev => ({ ...prev, img: String(reader.result || ''), imgMode: 'file' }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddFile = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm(prev => ({ ...prev, img: String(reader.result || ''), imgMode: 'file' }));
     };
     reader.readAsDataURL(file);
   };
@@ -535,11 +544,11 @@ function MenuManagement() {
 
       {showAddForm && (
         <div className="modal-overlay open" onClick={e => { if (e.target === e.currentTarget) setShowAddForm(false); }}>
-          <div className="modal">
+          <div className="modal menu-add-modal">
             <div className="modal-title">Add New Item</div>
             <div className="modal-sub">Create a new menu item</div>
 
-            <div className="admin-add-grid">
+            <div className="admin-add-grid menu-add-grid">
               <div><label className="admin-label">Name *</label><input className="admin-input" placeholder="Dish name" {...f('name')} /></div>
               <div><label className="admin-label">Price (₹) *</label><input className="admin-input" type="number" placeholder="150" {...f('price')} /></div>
               <div>
@@ -554,8 +563,62 @@ function MenuManagement() {
                   <option value="veg">Veg</option><option value="non-veg">Non-Veg</option>
                 </select>
               </div>
-              <div><label className="admin-label">Description</label><input className="admin-input" placeholder="Short description" {...f('desc')} /></div>
-              <div><label className="admin-label">Image URL</label><input className="admin-input" placeholder="https://..." {...f('img')} /></div>
+              <div>
+                <label className="admin-label">Image Source</label>
+                <div className="img-source-switch">
+                  <button
+                    type="button"
+                    className={`img-source-btn ${form.imgMode === 'url' ? 'active' : ''}`}
+                    onClick={() => setForm(prev => ({ ...prev, imgMode: 'url' }))}
+                  >
+                    Online URL
+                  </button>
+                  <button
+                    type="button"
+                    className={`img-source-btn ${form.imgMode === 'file' ? 'active' : ''}`}
+                    onClick={() => setForm(prev => ({ ...prev, imgMode: 'file' }))}
+                  >
+                    Local Upload
+                  </button>
+                </div>
+              </div>
+
+              {form.imgMode === 'url' ? (
+                <div>
+                  <label className="admin-label">Image URL</label>
+                  <input className="admin-input" placeholder="https://..." {...f('img')} />
+                </div>
+              ) : (
+                <div>
+                  <label className="admin-label">Upload Image</label>
+                  <input
+                    className="admin-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={e => handleAddFile(e.target.files?.[0])}
+                  />
+                </div>
+              )}
+
+              <div className="span2">
+                <label className="admin-label">Description</label>
+                <input className="admin-input" placeholder="Short description" {...f('desc')} />
+              </div>
+
+              {form.img && (
+                <div className="edit-img-preview-wrap span2">
+                  <button
+                    type="button"
+                    className="edit-img-remove-btn"
+                    aria-label="Remove picture"
+                    title="Remove picture"
+                    onClick={() => setForm(prev => ({ ...prev, img: '' }))}
+                  >
+                    ×
+                  </button>
+                  <img src={form.img} alt="Preview" className="edit-img-preview" />
+                </div>
+              )}
             </div>
 
             <div className="modal-actions">

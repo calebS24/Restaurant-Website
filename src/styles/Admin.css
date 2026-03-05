@@ -676,6 +676,7 @@
   display: flex;
   gap: 0.45rem;
   margin-top: 0.35rem;
+  flex-wrap: nowrap;
 }
 
 .img-source-btn {
@@ -683,10 +684,13 @@
   border-radius: 9px;
   background: #fff;
   color: var(--ink);
-  padding: 0.36rem 0.7rem;
-  font-size: 0.72rem;
+  padding: 0.42rem 0.82rem;
+  font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  min-width: 112px;
+  line-height: 1.1;
 }
 
 .img-source-btn.active {
@@ -744,6 +748,15 @@
 .edit-img-remove-btn:hover {
   background: var(--spice);
   color: #fff;
+}
+
+.menu-add-modal {
+  max-width: 780px;
+}
+
+.menu-add-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
 }
 
 .admin-textarea {
@@ -1015,6 +1028,10 @@
     grid-template-columns: 1fr;
   }
 
+  .menu-add-grid {
+    grid-template-columns: 1fr;
+  }
+
   .admin-head-row {
     flex-direction: column;
     align-items: stretch;
@@ -1029,6 +1046,15 @@
   .admin-add-grid .span3,
   .admin-edit-grid .span2 {
     grid-column: auto;
+  }
+
+  .img-source-switch {
+    flex-wrap: wrap;
+  }
+
+  .img-source-btn {
+    min-width: 0;
+    flex: 1 1 48%;
   }
 
   .row-remove-icon {
