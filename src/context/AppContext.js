@@ -58,7 +58,16 @@ function loadStoredReservations() {
 async function apiRequest(path, { method = 'GET', body, token } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const url = /^https?:\/\//i.test(path) ? path : `${API_BASE_URL}${path}`;
+  let url = path;
+  if (!/^https?:\/\//i.test(path)) {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    const base = API_BASE_URL;
+    if (base && /\/api\/?$/i.test(base) && /^\/api\//i.test(normalizedPath)) {
+      url = `${base.replace(/\/+$/, '')}${normalizedPath.replace(/^\/api/, '')}`;
+    } else {
+      url = `${base}${normalizedPath}`;
+    }
+  }
 
   let res;
   try {
