@@ -59,10 +59,19 @@
 
 .strip-scroll {
   display: flex;
-  gap: 4rem;
   align-items: center;
+  width: max-content;
   animation: scroll-strip 30s linear infinite;
   white-space: nowrap;
+  will-change: transform;
+}
+
+.strip-group {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  padding-right: 4rem;
+  flex-shrink: 0;
 }
 
 .strip-item {

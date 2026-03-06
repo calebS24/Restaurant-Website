@@ -9,14 +9,21 @@ const items = [
 ];
 
 export default function Strip() {
+  const renderGroup = (suffix = '') => (
+    <div className="strip-group" aria-hidden={suffix ? 'true' : undefined}>
+      {items.map(([icon, label], i) => (
+        <div className="strip-item" key={`${suffix}${i}`}>
+          <span>{icon}</span> {label}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="about-strip">
       <div className="strip-scroll">
-        {[...items, ...items].map(([icon, label], i) => (
-          <div className="strip-item" key={i}>
-            <span>{icon}</span> {label}
-          </div>
-        ))}
+        {renderGroup()}
+        {renderGroup('dup-')}
       </div>
     </div>
   );
