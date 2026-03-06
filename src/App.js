@@ -9,6 +9,7 @@ import Toast from './components/Toast';
 import HomePage from './pages/HomePage';
 import CustomerPage from './pages/CustomerPage';
 import AdminPage from './pages/AdminPage';
+import GalleryPage from './pages/GalleryPage';
 import './styles/global.css';
 import './styles/sections.css';
 
@@ -36,6 +37,7 @@ function AppInner() {
     <>
       {!showAdminPage && <Navbar />}
       {!showAdminPage && currentPage === 'home' && <div style={{ paddingTop: 70 }}><HomePage /></div>}
+      {!showAdminPage && currentPage === 'gallery' && <GalleryPage />}
       {!showAdminPage && currentPage === 'customer' && <CustomerPage />}
       {showAdminPage && <AdminPage adminOnly={showAdminPage} />}
       {showAdminPage && (

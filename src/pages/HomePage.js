@@ -5,7 +5,6 @@ import Strip from '../components/Strip';
 import MenuSection from '../components/MenuSection';
 import ReservationSection from '../components/ReservationSection';
 import ReviewsSection from '../components/ReviewsSection';
-import GallerySection from '../components/GallerySection';
 import Footer from '../components/Footer';
 
 export default function HomePage() {
@@ -28,7 +27,6 @@ export default function HomePage() {
       <MenuSection />
       <ReservationSection />
       <ReviewsSection />
-      <GallerySection />
       <Footer />
     </>
   );

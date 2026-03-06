@@ -2,7 +2,7 @@
 
 /* ── SHARED SECTION ── */
 .section {
-  padding: 5rem 2rem;
+  padding: 2.5rem 2rem;
 }
 
 .section-inner {
@@ -963,45 +963,35 @@ textarea.form-input {
   background: var(--cream);
 }
 
-.gallery-upload-area {
-  border: 2px dashed rgba(200, 68, 10, 0.3);
-  border-radius: 20px;
-  padding: 3rem;
-  text-align: center;
-  cursor: pointer;
-  background: rgba(200, 68, 10, 0.02);
-  transition: all 0.25s;
-  margin-bottom: 2rem;
-  position: relative;
+.gallery-upload-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.2rem;
 }
 
-.gallery-upload-area:hover {
-  border-color: var(--spice);
-  background: rgba(200, 68, 10, 0.04);
+.gallery-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--spice);
+  border-radius: 10px;
+  background: var(--spice);
+  color: #fff;
+  padding: 0.52rem 0.95rem;
+  min-width: 122px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.gallery-upload-icon {
-  font-size: 2.5rem;
-  color: var(--spice);
-  opacity: 0.6;
-  margin-bottom: 0.75rem;
+.gallery-upload-btn:hover {
+  background: var(--spice-light);
+  border-color: var(--spice-light);
 }
 
-.gallery-upload-text {
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-.gallery-upload-text strong {
-  color: var(--spice);
-}
-
-.gallery-file-input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
+.gallery-file-input-hidden { display: none; }
 
 .gallery-grid {
   display: grid;
@@ -1047,6 +1037,12 @@ textarea.form-input {
   color: #fff;
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .gallery-upload-btn {
+    width: auto;
+  }
 }
 
 /* ── MODAL ── */

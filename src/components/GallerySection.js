@@ -1,9 +1,25 @@
 // src/components/GallerySection.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 
 export default function GallerySection() {
   const { gallery, addPhoto, showToast } = useApp();
+  const fileRef = React.useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      }),
+      { threshold: 0.1 }
+    );
+
+    document.querySelectorAll('.gallery-section .fade-in-up:not(.visible)').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   const handleUpload = (e) => {
     const file = e.target.files[0];
@@ -14,6 +30,7 @@ export default function GallerySection() {
       showToast('Photo uploaded to gallery! 📸', 'success');
     };
     reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   return (
@@ -25,13 +42,17 @@ export default function GallerySection() {
           <p className="section-desc">A visual feast — snapshots from our kitchen, our tables, and our community.</p>
         </div>
 
-        <div className="gallery-upload-area">
-          <div className="gallery-upload-icon">📷</div>
-          <div className="gallery-upload-text">
-            <strong>Click to upload</strong> or drag & drop your food photos here
-          </div>
+        <div className="gallery-upload-row">
+          <button
+            type="button"
+            className="gallery-upload-btn"
+            onClick={() => fileRef.current?.click()}
+          >
+            Upload a Photo
+          </button>
           <input
-            className="gallery-file-input"
+            ref={fileRef}
+            className="gallery-file-input-hidden"
             type="file"
             accept="image/*"
             onChange={handleUpload}

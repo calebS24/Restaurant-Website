@@ -9,6 +9,7 @@ const TABS = [
   { key: 'dashboard', icon: '📊', label: 'Dashboard' },
   { key: 'reservations', icon: '📅', label: 'Reservations' },
   { key: 'menu', icon: '🍽', label: 'Menu Management' },
+  { key: 'gallery', icon: '🖼️', label: 'Gallery' },
   { key: 'orders', icon: '📦', label: 'Orders' },
   { key: 'reviews', icon: '⭐', label: 'Reviews' },
   { key: 'team', icon: '🛡️', label: 'Team Roles' },
@@ -17,6 +18,7 @@ const ADMIN_ROUTE_BY_TAB = {
   dashboard: 'dashboard',
   reservations: 'reservations',
   menu: 'menu-management',
+  gallery: 'gallery',
   orders: 'orders',
   reviews: 'reviews',
   team: 'team-roles',
@@ -737,6 +739,37 @@ function Orders() {
   );
 }
 
+// ── Gallery Moderation ───────────────────────────────────────
+function AdminGallery() {
+  const { gallery, removePhoto, showToast } = useApp();
+
+  const handleRemove = (photo) => {
+    const ok = window.confirm(`Remove photo "${photo.credit}" from gallery?`);
+    if (!ok) return;
+    removePhoto(photo.id);
+    showToast('Photo removed from gallery.', 'success');
+  };
+
+  return (
+    <div>
+      <div className="admin-page-title">Gallery</div>
+      <div className="admin-page-sub">Moderate gallery photos uploaded by users</div>
+      <div className="admin-gallery-grid">
+        {gallery.map(photo => (
+          <div className="admin-gallery-card" key={photo.id}>
+            <img src={photo.src} alt={photo.credit} className="admin-gallery-img" />
+            <div className="admin-gallery-foot">
+              <div className="admin-gallery-credit">{photo.credit}</div>
+              <button className="admin-action-btn alert" onClick={() => handleRemove(photo)}>Remove</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {gallery.length === 0 && <div className="admin-empty-panel">No photos in gallery.</div>}
+    </div>
+  );
+}
+
 // ── Reviews ───────────────────────────────────────────────────
 function AdminReviews() {
   const { reviews, removeReview, showToast } = useApp();
@@ -751,7 +784,7 @@ function AdminReviews() {
             {reviews.map(r => (
               <tr key={r.id}>
                 <td><strong>{r.name}</strong></td>
-                <td style={{ color: 'var(--gold)' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</td>
+                <td style={{ color: '#ff9500' }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</td>
                 <td style={{ maxWidth: 220 }}>{r.text.substring(0, 80)}...</td>
                 <td>{r.date}</td>
                 <td><button className="admin-action-btn alert" onClick={() => { removeReview(r.id); showToast('Review removed.', ''); }}>Remove</button></td>
@@ -1224,6 +1257,7 @@ export default function AdminPage({ adminOnly = false }) {
     if (activeTab === 'dashboard') return <Dashboard onNavigate={navigateAdminTab} />;
     if (activeTab === 'reservations') return <Reservations />;
     if (activeTab === 'menu') return <MenuManagement />;
+    if (activeTab === 'gallery') return <AdminGallery />;
     if (activeTab === 'orders') return <Orders />;
     if (activeTab === 'reviews') return <AdminReviews />;
     return <TeamRoles />;

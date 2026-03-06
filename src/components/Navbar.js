@@ -18,7 +18,7 @@ export default function Navbar() {
     setCurrentPage(page);
     setMenuOpen(false);
 
-    if (page === 'home' && !hash) {
+    if ((page === 'home' || page === 'gallery') && !hash) {
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 60);
@@ -51,7 +51,7 @@ export default function Navbar() {
           <li><button className="nav-link-btn" onClick={() => goTo('home', 'menu')}>Menu</button></li>
           <li><button className="nav-link-btn" onClick={() => goTo('home', 'reservation')}>Reserve</button></li>
           <li><button className="nav-link-btn" onClick={() => goTo('home', 'reviews')}>Reviews</button></li>
-          <li><button className="nav-link-btn" onClick={() => goTo('home', 'gallery')}>Gallery</button></li>
+          <li><button className="nav-link-btn" onClick={() => goTo('gallery')}>Gallery</button></li>
           <li>
             <button className="nav-link-btn" onClick={() => setCartOpen(true)}>
               Your Cart {cartCount > 0 && <span style={{ background: 'var(--spice)', color: '#fff', borderRadius: '50%', padding: '0 5px', fontSize: '0.7rem', marginLeft: '2px' }}>{cartCount}</span>}
@@ -69,7 +69,7 @@ export default function Navbar() {
         <button onClick={() => goTo('home', 'menu')}>Menu</button>
         <button onClick={() => goTo('home', 'reservation')}>Reserve</button>
         <button onClick={() => goTo('home', 'reviews')}>Reviews</button>
-        <button onClick={() => goTo('home', 'gallery')}>Gallery</button>
+        <button onClick={() => goTo('gallery')}>Gallery</button>
         <button onClick={() => { setCartOpen(true); setMenuOpen(false); }}>Your Cart {cartCount > 0 && `(${cartCount})`}</button>
         <button className="nav-mobile-cta" onClick={() => goTo('customer')}>My Account</button>
       </div>

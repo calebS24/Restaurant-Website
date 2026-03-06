@@ -1,27 +1,57 @@
 // src/context/AppContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { menuItems as initialMenu, initialReviews, initialReservations, galleryPhotos as initialGallery } from '../data/menuItems';
+import { menuItems as initialMenu, initialReviews, galleryPhotos as initialGallery } from '../data/menuItems';
 
 const AppContext = createContext();
 const AUTH_TOKEN_KEY = 'venice_auth_token';
 const ADMIN_SESSION_KEY = 'venice_admin_session';
-const VALID_PAGES = new Set(['home', 'customer', 'admin']);
+const GALLERY_STORAGE_KEY = 'venice_gallery_photos';
+const RESERVATIONS_STORAGE_KEY = 'venice_reservations';
+const VALID_PAGES = new Set(['home', 'customer', 'admin', 'gallery']);
 const STAFF_ROLES = new Set(['owner', 'frontdesk', 'service_manager', 'assistant', 'waiter']);
 
 function pageToPath(page) {
   if (page === 'customer') return '/customer';
   if (page === 'admin') return '/admin';
+  if (page === 'gallery') return '/gallery';
   return '/';
 }
 
 function pathToPage(pathname) {
   if (pathname === '/customer') return 'customer';
   if (pathname === '/admin' || pathname.startsWith('/admin/')) return 'admin';
+  if (pathname === '/gallery') return 'gallery';
   return 'home';
 }
 
 function isStaffRole(role) {
   return STAFF_ROLES.has(role);
+}
+
+function loadStoredGallery() {
+  if (typeof window === 'undefined') return initialGallery;
+  try {
+    const raw = localStorage.getItem(GALLERY_STORAGE_KEY);
+    if (!raw) return initialGallery;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return initialGallery;
+    return parsed;
+  } catch (_err) {
+    return initialGallery;
+  }
+}
+
+function loadStoredReservations() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(RESERVATIONS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch (_err) {
+    return [];
+  }
 }
 
 async function apiRequest(path, { method = 'GET', body, token } = {}) {
@@ -99,13 +129,13 @@ export function AppProvider({ children }) {
   const [reviews, setReviews] = useState(initialReviews);
 
   // ── Reservations ──
-  const [reservations, setReservations] = useState(initialReservations);
+  const [reservations, setReservations] = useState(() => loadStoredReservations());
 
   // ── Orders ──
   const [orders, setOrders] = useState([]);
 
   // ── Gallery ──
-  const [gallery, setGallery] = useState(initialGallery);
+  const [gallery, setGallery] = useState(() => loadStoredGallery());
 
   // ── Toast ──
   const [toast, setToast] = useState({ msg: '', type: '', visible: false });
@@ -238,6 +268,16 @@ export function AppProvider({ children }) {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(gallery));
+  }, [gallery]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(RESERVATIONS_STORAGE_KEY, JSON.stringify(reservations));
+  }, [reservations]);
+
   // ── Review helpers ──
   const addReview = (review) => {
     setReviews(prev => [{ ...review, id: 'rv' + Date.now() }, ...prev]);
@@ -249,7 +289,16 @@ export function AppProvider({ children }) {
 
   // ── Reservation helpers ──
   const addReservation = (res) => {
-    const newRes = { ...res, id: 'RES' + String(reservations.length + 1).padStart(3, '0'), status: 'pending', attendance: null };
+    const maxId = reservations.reduce((max, r) => {
+      const n = parseInt(String(r?.id || '').replace(/^RES/, ''), 10);
+      return Number.isFinite(n) ? Math.max(max, n) : max;
+    }, 0);
+    const newRes = {
+      ...res,
+      id: 'RES' + String(maxId + 1).padStart(3, '0'),
+      status: 'pending',
+      attendance: null,
+    };
     setReservations(prev => [...prev, newRes]);
     if (customer) {
       setCustomer(prev => ({ ...prev, reservations: [...(prev.reservations || []), newRes] }));
@@ -298,6 +347,7 @@ export function AppProvider({ children }) {
 
   // ── Gallery helper ──
   const addPhoto = (photo) => setGallery(prev => [photo, ...prev]);
+  const removePhoto = (id) => setGallery(prev => prev.filter(photo => photo.id !== id));
 
   return (
     <AppContext.Provider value={{
@@ -316,7 +366,7 @@ export function AppProvider({ children }) {
       reviews, addReview, removeReview,
       reservations, addReservation, updateReservation, removeReservation,
       orders, placeOrder,
-      gallery, addPhoto,
+      gallery, addPhoto, removePhoto,
       toast, showToast,
     }}>
       {children}

@@ -34,12 +34,7 @@ export const initialReviews = [
   { id: 'rv6', name: 'Shyam Raj', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&q=80', rating: 4, text: 'Been coming here since 2019. Always consistent. The beef fry with porotta is my go-to evening snack combo.', dish: 'Beef Fry', date: 'Nov 2025' },
 ];
 
-export const initialReservations = [
-  { id: 'RES001', name: 'Arjun Nair', phone: '+91 98XXX XXXXX', email: 'arjun@email.com', date: '2026-03-08', time: '07:30 PM', guests: '4 People', occasion: 'Birthday', status: 'confirmed', attendance: null, notes: 'Surprise cake arranged' },
-  { id: 'RES002', name: 'Meera Thomas', phone: '+91 94XXX XXXXX', email: 'meera@email.com', date: '2026-03-08', time: '08:00 PM', guests: '2 People', occasion: 'Anniversary', status: 'unavailable', attendance: null, notes: 'Anniversary dinner' },
-  { id: 'RES003', name: 'Rajan Pillai', phone: '+91 91XXX XXXXX', email: 'rajan@email.com', date: '2026-03-09', time: '01:00 PM', guests: '6 People', occasion: 'Family Gathering', status: 'pending', attendance: null, notes: 'Require high chair' },
-  { id: 'RES004', name: 'Sunitha Kuriakose', phone: '+91 80XXX XXXXX', email: 'sunitha@email.com', date: '2026-03-10', time: '07:00 PM', guests: '3 People', occasion: 'Regular Dining', status: 'confirmed', attendance: null, notes: '' },
-];
+export const initialReservations = [];
 
 export const galleryPhotos = [
   { id: 'g1', src: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80', credit: 'The Venice Kitchen' },
