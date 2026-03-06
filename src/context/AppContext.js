@@ -7,6 +7,7 @@ const AUTH_TOKEN_KEY = 'venice_auth_token';
 const ADMIN_SESSION_KEY = 'venice_admin_session';
 const GALLERY_STORAGE_KEY = 'venice_gallery_photos';
 const RESERVATIONS_STORAGE_KEY = 'venice_reservations';
+const API_BASE_URL = String(process.env.REACT_APP_API_BASE_URL || '').replace(/\/+$/, '');
 const VALID_PAGES = new Set(['home', 'customer', 'admin', 'gallery']);
 const STAFF_ROLES = new Set(['owner', 'frontdesk', 'service_manager', 'assistant', 'waiter']);
 
@@ -57,10 +58,11 @@ function loadStoredReservations() {
 async function apiRequest(path, { method = 'GET', body, token } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
+  const url = /^https?:\/\//i.test(path) ? path : `${API_BASE_URL}${path}`;
 
   let res;
   try {
-    res = await fetch(path, {
+    res = await fetch(url, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
